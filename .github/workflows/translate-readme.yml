@@ -1,0 +1,187 @@
+name: Auto-translate README to English
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'README.md'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'README.md'
+  workflow_dispatch: # Manueller Trigger
+
+jobs:
+  translate-readme:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        npm install axios
+
+    - name: Create translation script
+      run: |
+        cat > translate.js << 'EOF'
+        const fs = require('fs');
+        const axios = require('axios');
+
+        // Übersetzungsfunktion mit mehreren API-Optionen
+        async function translateText(text, targetLang = 'en') {
+          try {
+            // Versuche LibreTranslate API (kostenlos)
+            console.log('🔄 Versuche LibreTranslate API...');
+            const response = await axios.post('https://libretranslate.de/translate', {
+              q: text,
+              source: 'de',
+              target: targetLang,
+              format: 'text'
+            }, {
+              timeout: 10000 // 10 Sekunden Timeout
+            });
+            
+            if (response.data && response.data.translatedText) {
+              console.log('✅ LibreTranslate erfolgreich');
+              return response.data.translatedText;
+            }
+          } catch (error) {
+            console.log('❌ LibreTranslate fehlgeschlagen:', error.message);
+          }
+
+          try {
+            // Versuche MyMemory API (kostenlos, 1000 Anfragen/Tag)
+            console.log('🔄 Versuche MyMemory API...');
+            const encodedText = encodeURIComponent(text);
+            const response = await axios.get(
+              `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=de|en`,
+              { timeout: 10000 }
+            );
+            
+            if (response.data && response.data.responseData && response.data.translatedText) {
+              console.log('✅ MyMemory erfolgreich');
+              return response.data.responseData.translatedText;
+            }
+          } catch (error) {
+            console.log('❌ MyMemory fehlgeschlagen:', error.message);
+          }
+
+          // Alle APIs sind fehlgeschlagen
+          throw new Error('Alle Übersetzungs-APIs sind fehlgeschlagen. LibreTranslate und MyMemory konnten nicht erreicht werden.');
+        }
+
+        async function translateMarkdown() {
+          try {
+            // Lese deutsche README
+            if (!fs.existsSync('README.md')) {
+              throw new Error('README.md nicht gefunden');
+            }
+            
+            const germanReadme = fs.readFileSync('README.md', 'utf8');
+            console.log('📖 Deutsche README gelesen');
+            
+            // Übersetze den Inhalt
+            const translatedContent = await translateText(germanReadme);
+            
+            // Erstelle englische README
+            const englishReadme = '# Kitadachs\n\n' + translatedContent + '\n\n---\n*This README was automatically translated from German using GitHub Actions.*\n*Die deutsche Version finden Sie in der [README.md](README.md) Datei.*';
+
+            // Schreibe englische README
+            fs.writeFileSync('README.en.md', englishReadme);
+            console.log('✅ README.en.md erfolgreich erstellt');
+            
+            // Prüfe ob es Änderungen gibt
+            const existingEnglish = fs.existsSync('README.en.md') ? fs.readFileSync('README.en.md', 'utf8') : '';
+            if (existingEnglish !== englishReadme) {
+              console.log('🔄 Neue Übersetzung erstellt');
+              return true; // Änderungen vorhanden
+            } else {
+              console.log('ℹ️ Keine Änderungen notwendig');
+              return false; // Keine Änderungen
+            }
+            
+          } catch (error) {
+            console.error('❌ Fehler beim Übersetzen:', error.message);
+            throw error; // Fehler weiterwerfen für GitHub-Benachrichtigung
+          }
+        }
+
+        // Führe Übersetzung aus
+        translateMarkdown().then(hasChanges => {
+          process.exit(hasChanges ? 0 : 1);
+        }).catch(error => {
+          console.error('❌ Kritischer Fehler:', error.message);
+          process.exit(1);
+        });
+        EOF
+
+    - name: Run translation
+      id: translation
+      run: |
+        if node translate.js; then
+          echo "translation-success=true" >> $GITHUB_OUTPUT
+        else
+          echo "translation-success=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check for changes
+      id: check-changes
+      run: |
+        if git diff --quiet README.en.md; then
+          echo "has-changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "has-changes=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Commit and push changes
+      if: steps.translation.outputs.translation-success == 'true' && steps.check-changes.outputs.has-changes == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add README.en.md
+        git commit -m "🌍 Auto-translate README to English - Automatically translated from German README - Updated by GitHub Actions workflow - Translation using LibreTranslate/MyMemory APIs"
+        git push
+
+    - name: Create Pull Request for translation
+      if: steps.translation.outputs.translation-success == 'true' && steps.check-changes.outputs.has-changes == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "🌍 Auto-translate README to English"
+        title: "🌍 Auto-translate README to English"
+        body: "## 🤖 Automatische Übersetzung der README\n\nDiese Pull Request wurde automatisch von GitHub Actions erstellt.\n\n### Was wurde gemacht:\n- 📖 Deutsche README ins Englische übersetzt\n- 🔄 Übersetzung bei jeder Änderung der deutschen Version aktualisiert\n- ✅ Übersetzung über LibreTranslate oder MyMemory API\n- 🌐 Robuste Übersetzungslogik implementiert\n\n### Dateien:\n- `README.md` - Deutsche Version (Original)\n- `README.en.md` - Englische Version (Übersetzung)\n\n### Übersetzungs-APIs (in Reihenfolge):\n1. **LibreTranslate** - Kostenlose Open-Source API\n2. **MyMemory** - Kostenlose API (1000 Anfragen/Tag)\n\n### Hinweise:\n- Die Übersetzung erfolgt automatisch bei jedem Push auf main/master\n- Beide APIs werden versucht, bevor ein Fehler gemeldet wird\n- Beide Versionen werden synchron gehalten\n- Übersetzungen werden nur bei Änderungen erstellt\n\n---\n*Diese PR wurde automatisch generiert. Bitte überprüfen Sie die Übersetzung.*"
+        branch: auto-translate-readme
+        delete-branch: true
+        labels: "translation,automated,documentation"
+
+    - name: Translation Summary
+      if: always()
+      run: |
+        echo "## 🌍 Übersetzungs-Zusammenfassung" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.translation.outputs.translation-success }}" == "true" ]; then
+          echo "✅ **Übersetzung erfolgreich**" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-changes.outputs.has-changes }}" == "true" ]; then
+            echo "🔄 **Neue Übersetzung erstellt**" >> $GITHUB_STEP_SUMMARY
+            echo "- README.en.md wurde aktualisiert" >> $GITHUB_STEP_SUMMARY
+            echo "- Pull Request wurde erstellt" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ **Keine Änderungen notwendig**" >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "❌ **Übersetzung fehlgeschlagen**" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub wird automatisch eine E-Mail-Benachrichtigung senden" >> $GITHUB_STEP_SUMMARY
+          echo "- Überprüfen Sie die Logs für Details" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Workflow: Auto-translate README to English*" >> $GITHUB_STEP_SUMMARY
