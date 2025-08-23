@@ -2,11 +2,11 @@ name: Auto-translate README to English
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, feat/* ]
     paths:
       - 'README.md'
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
     paths:
       - 'README.md'
   workflow_dispatch: # Manueller Trigger
@@ -34,10 +34,42 @@ jobs:
       run: |
         cat > translate.js << 'EOF'
         const fs = require('fs');
+        const path = require('path');
         const axios = require('axios');
+
+        // Sichere Arbeitsverzeichnis-Behandlung
+        function getWorkingDirectory() {
+          try {
+            // Versuche verschiedene Verzeichnisse
+            const possiblePaths = [
+              process.env.GITHUB_WORKSPACE,
+              process.cwd(),
+              __dirname,
+              '.'
+            ].filter(Boolean);
+            
+            for (const dir of possiblePaths) {
+              try {
+                if (fs.existsSync(path.join(dir, 'README.md'))) {
+                  console.log('✅ README.md gefunden in:', dir);
+                  return dir;
+                }
+              } catch (e) {
+                console.log('⚠️ Verzeichnis nicht zugänglich:', dir);
+              }
+            }
+            
+            throw new Error('Kein gültiges Arbeitsverzeichnis mit README.md gefunden');
+          } catch (error) {
+            console.error('❌ Fehler beim Bestimmen des Arbeitsverzeichnisses:', error.message);
+            throw error;
+          }
+        }
 
         // Übersetzungsfunktion mit mehreren API-Optionen
         async function translateText(text, targetLang = 'en') {
+          let lastError = null;
+          
           try {
             // Versuche LibreTranslate API (kostenlos)
             console.log('🔄 Versuche LibreTranslate API...');
@@ -47,7 +79,7 @@ jobs:
               target: targetLang,
               format: 'text'
             }, {
-              timeout: 10000 // 10 Sekunden Timeout
+              timeout: 15000 // 15 Sekunden Timeout
             });
             
             if (response.data && response.data.translatedText) {
@@ -55,6 +87,7 @@ jobs:
               return response.data.translatedText;
             }
           } catch (error) {
+            lastError = error;
             console.log('❌ LibreTranslate fehlgeschlagen:', error.message);
           }
 
@@ -64,30 +97,41 @@ jobs:
             const encodedText = encodeURIComponent(text);
             const response = await axios.get(
               `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=de|en`,
-              { timeout: 10000 }
+              { timeout: 15000 }
             );
             
-            if (response.data && response.data.responseData && response.data.translatedText) {
+            if (response.data && response.data.responseData && response.data.responseData.translatedText) {
               console.log('✅ MyMemory erfolgreich');
               return response.data.responseData.translatedText;
             }
           } catch (error) {
+            lastError = error;
             console.log('❌ MyMemory fehlgeschlagen:', error.message);
           }
 
           // Alle APIs sind fehlgeschlagen
-          throw new Error('Alle Übersetzungs-APIs sind fehlgeschlagen. LibreTranslate und MyMemory konnten nicht erreicht werden.');
+          const errorMessage = `Alle Übersetzungs-APIs sind fehlgeschlagen:
+          - LibreTranslate: ${lastError?.message || 'Unbekannter Fehler'}
+          - MyMemory: ${lastError?.message || 'Unbekannter Fehler'}
+          
+          Bitte überprüfen Sie die API-Verfügbarkeit oder verwenden Sie eine andere Übersetzungsmethode.`;
+          
+          throw new Error(errorMessage);
         }
 
         async function translateMarkdown() {
           try {
-            // Lese deutsche README
-            if (!fs.existsSync('README.md')) {
-              throw new Error('README.md nicht gefunden');
-            }
+            // Bestimme sicheres Arbeitsverzeichnis
+            const workingDir = getWorkingDirectory();
+            console.log('📁 Verwende Arbeitsverzeichnis:', workingDir);
             
-            const germanReadme = fs.readFileSync('README.md', 'utf8');
+            // Lese deutsche README
+            const readmePath = path.join(workingDir, 'README.md');
+            console.log('🔍 Lese README.md von:', readmePath);
+            
+            const germanReadme = fs.readFileSync(readmePath, 'utf8');
             console.log('📖 Deutsche README gelesen');
+            console.log('📝 Länge des Textes:', germanReadme.length, 'Zeichen');
             
             // Übersetze den Inhalt
             const translatedContent = await translateText(germanReadme);
@@ -96,11 +140,12 @@ jobs:
             const englishReadme = '# Kitadachs\n\n' + translatedContent + '\n\n---\n*This README was automatically translated from German using GitHub Actions.*\n*Die deutsche Version finden Sie in der [README.md](README.md) Datei.*';
 
             // Schreibe englische README
-            fs.writeFileSync('README.en.md', englishReadme);
-            console.log('✅ README.en.md erfolgreich erstellt');
+            const outputPath = path.join(workingDir, 'README.en.md');
+            fs.writeFileSync(outputPath, englishReadme);
+            console.log('✅ README.en.md erfolgreich erstellt in:', outputPath);
             
             // Prüfe ob es Änderungen gibt
-            const existingEnglish = fs.existsSync('README.en.md') ? fs.readFileSync('README.en.md', 'utf8') : '';
+            const existingEnglish = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, 'utf8') : '';
             if (existingEnglish !== englishReadme) {
               console.log('🔄 Neue Übersetzung erstellt');
               return true; // Änderungen vorhanden
@@ -115,31 +160,51 @@ jobs:
           }
         }
 
-        // Führe Übersetzung aus
-        translateMarkdown().then(hasChanges => {
-          process.exit(hasChanges ? 0 : 1);
-        }).catch(error => {
-          console.error('❌ Kritischer Fehler:', error.message);
-          process.exit(1);
-        });
+        // Hauptfunktion mit Fehlerbehandlung
+        async function main() {
+          try {
+            console.log('🚀 Starte Übersetzungsprozess...');
+            const hasChanges = await translateMarkdown();
+            console.log('🎯 Übersetzung abgeschlossen, Änderungen:', hasChanges);
+            process.exit(hasChanges ? 0 : 1);
+          } catch (error) {
+            console.error('❌ Kritischer Fehler:', error.message);
+            process.exit(1);
+          }
+        }
+
+        // Führe Hauptfunktion aus
+        main();
         EOF
 
     - name: Run translation
       id: translation
       run: |
+        echo "🚀 Starte Übersetzung..."
+        echo "📁 Aktuelles Verzeichnis: $(pwd)"
+        echo "📁 Verfügbare Dateien: $(ls -la)"
+        echo "📁 GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        
+        # Führe Node.js Script aus
         if node translate.js; then
           echo "translation-success=true" >> $GITHUB_OUTPUT
+          echo "✅ Übersetzung erfolgreich"
         else
           echo "translation-success=false" >> $GITHUB_OUTPUT
+          echo "❌ Übersetzung fehlgeschlagen"
+          exit 1  # Wichtig: Exit Code 1 bei Fehler
         fi
 
     - name: Check for changes
       id: check-changes
+      if: steps.translation.outputs.translation-success == 'true'
       run: |
         if git diff --quiet README.en.md; then
           echo "has-changes=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ Keine Änderungen an README.en.md"
         else
           echo "has-changes=true" >> $GITHUB_OUTPUT
+          echo "🔄 Änderungen an README.en.md erkannt"
         fi
 
     - name: Commit and push changes
@@ -181,7 +246,9 @@ jobs:
           echo "❌ **Übersetzung fehlgeschlagen**" >> $GITHUB_STEP_SUMMARY
           echo "- GitHub wird automatisch eine E-Mail-Benachrichtigung senden" >> $GITHUB_STEP_SUMMARY
           echo "- Überprüfen Sie die Logs für Details" >> $GITHUB_STEP_SUMMARY
+          echo "- Beide Übersetzungs-APIs sind nicht verfügbar" >> $GITHUB_STEP_SUMMARY
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "---" >> $GITHUB_STEP_SUMMARY
         echo "*Workflow: Auto-translate README to English*" >> $GITHUB_STEP_SUMMARY
+
