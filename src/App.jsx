@@ -161,20 +161,7 @@ function App() {
     }
   }
 
-  // Funktion zum Exportieren der Daten als JSON-Datei (Fallback)
-  const exportToFile = () => {
-    const dataStr = JSON.stringify(rows, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = currentFileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    setMenuOpen(false)
-  }
+
 
   // Funktion zum Importieren von Daten aus einer JSON-Datei
   const importFromFile = (event) => {

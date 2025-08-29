@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
 // Mock für die File System Access API
 Object.defineProperty(window, 'showSaveFilePicker', {
@@ -14,3 +15,6 @@ const localStorageMock = {
   clear: vi.fn(),
 }
 global.localStorage = localStorageMock
+
+/* eslint-env node */
+/* global global */
