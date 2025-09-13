@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import App from './App'
 
 describe('App', () => {
@@ -33,4 +34,5 @@ describe('App', () => {
     const emptyMessages = screen.getAllByText('Noch keine Kinder in dieser Gruppe')
     expect(emptyMessages).toHaveLength(4) // 4 Gruppen
   })
+
 })

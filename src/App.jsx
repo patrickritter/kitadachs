@@ -13,6 +13,14 @@ function App() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [lastSaved, setLastSaved] = useState(null)
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
+  const [groupNames, setGroupNames] = useState({
+    'A': 'Wiesenkinder',
+    'B': 'Waldwichtel', 
+    'C': 'Regenbogenkinder',
+    'D': 'Nestgruppe'
+  })
+  const [editingGroup, setEditingGroup] = useState(null)
+  const [newGroupName, setNewGroupName] = useState('')
 
   // Lade gespeicherte Daten beim Start (aus localStorage als Fallback)
   useEffect(() => {
@@ -24,6 +32,13 @@ function App() {
           setRows(parsedData)
           setLastSaved(new Date())
         }
+      }
+      
+      // Lade gespeicherte Gruppennamen
+      const savedGroupNames = localStorage.getItem('groupNames')
+      if (savedGroupNames) {
+        const parsedGroupNames = JSON.parse(savedGroupNames)
+        setGroupNames(parsedGroupNames)
       }
     } catch (error) {
       console.error('Fehler beim Laden der gespeicherten Daten:', error)
@@ -70,6 +85,31 @@ function App() {
     setRows(rows.filter(row => row.id !== rowToDelete.id))
     if (editingId === rowToDelete.id) setEditingId(null)
     setHasUnsavedChanges(true)
+  }
+
+  // Funktionen für Gruppen-Umbenennung
+  const startEditingGroup = (groupValue) => {
+    setEditingGroup(groupValue)
+    setNewGroupName(groupNames[groupValue])
+  }
+
+  const saveGroupName = () => {
+    if (newGroupName.trim() && editingGroup) {
+      const updatedGroupNames = {
+        ...groupNames,
+        [editingGroup]: newGroupName.trim()
+      }
+      setGroupNames(updatedGroupNames)
+      localStorage.setItem('groupNames', JSON.stringify(updatedGroupNames))
+      setEditingGroup(null)
+      setNewGroupName('')
+      setHasUnsavedChanges(true)
+    }
+  }
+
+  const cancelEditingGroup = () => {
+    setEditingGroup(null)
+    setNewGroupName('')
   }
 
   // Funktion zum Speichern der Daten mit "Speichern unter" (verbesserte Browser-Kompatibilität)
@@ -315,7 +355,7 @@ function App() {
             >
               {GROUP_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {groupNames[option.value]}
                 </option>
               ))}
             </select>
@@ -333,7 +373,51 @@ function App() {
       <div className="tables-grid">
         {GROUP_OPTIONS.map(option => (
           <div key={option.value} className="group-container">
-            <h2 className="group-title">{option.label}</h2>
+            <div className="group-title-container">
+              {editingGroup === option.value ? (
+                <div className="group-edit-container">
+                  <input
+                    type="text"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    className="group-name-input"
+                    placeholder="Gruppenname eingeben"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveGroupName()
+                      if (e.key === 'Escape') cancelEditingGroup()
+                    }}
+                  />
+                  <div className="group-edit-buttons">
+                    <button 
+                      onClick={saveGroupName}
+                      className="group-save-btn"
+                      title="Speichern"
+                    >
+                      ✓
+                    </button>
+                    <button 
+                      onClick={cancelEditingGroup}
+                      className="group-cancel-btn"
+                      title="Abbrechen"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="group-title-display">
+                  <h2 className="group-title">{groupNames[option.value]}</h2>
+                  <button 
+                    onClick={() => startEditingGroup(option.value)}
+                    className="group-edit-btn"
+                    title="Gruppenname bearbeiten"
+                  >
+                    ✎
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="names-grid">
               {rows
                 .filter(row => row.group === option.value)
@@ -378,7 +462,7 @@ function App() {
                       >
                         {GROUP_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
-                            {option.label}
+                            {groupNames[option.value]}
                           </option>
                         ))}
                       </select>
