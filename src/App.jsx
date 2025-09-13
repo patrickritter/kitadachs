@@ -31,6 +31,12 @@ function App() {
         if (Array.isArray(parsedData) && parsedData.length > 0) {
           setRows(parsedData)
           setLastSaved(new Date())
+        } else if (parsedData && Array.isArray(parsedData.rows)) {
+          setRows(parsedData.rows)
+          if (parsedData.groupNames && typeof parsedData.groupNames === 'object') {
+            setGroupNames(parsedData.groupNames)
+          }
+          setLastSaved(new Date())
         }
       }
       
@@ -112,9 +118,14 @@ function App() {
     setNewGroupName('')
   }
 
-  // Funktion zum Speichern der Daten mit "Speichern unter" (verbesserte Browser-Kompatibilität)
+  // Funktion zum Speichern der Daten mit "Speichern unter" (inkl. Gruppenname-Struktur)
   const saveAs = async () => {
     try {
+      const exportPayload = {
+        rows,
+        groupNames,
+        version: 1,
+      }
       // Methode 1: File System Access API (moderne Browser)
       if ('showSaveFilePicker' in window) {
         const handle = await window.showSaveFilePicker({
@@ -128,7 +139,7 @@ function App() {
         })
         
         const writable = await handle.createWritable()
-        const dataStr = JSON.stringify(rows, null, 2)
+        const dataStr = JSON.stringify(exportPayload, null, 2)
         await writable.write(dataStr)
         await writable.close()
         
@@ -145,7 +156,7 @@ function App() {
       }
       
       // Methode 2: Download mit Dateinamen-Auswahl (bessere Kompatibilität)
-      const dataStr = JSON.stringify(rows, null, 2)
+      const dataStr = JSON.stringify(exportPayload, null, 2)
       const dataBlob = new Blob([dataStr], { type: 'application/json' })
       
       // Erstelle einen versteckten Download-Link
@@ -179,7 +190,7 @@ function App() {
       
       // Fallback: Einfacher Download
       try {
-        const dataStr = JSON.stringify(rows, null, 2)
+        const dataStr = JSON.stringify({ rows, groupNames, version: 1 }, null, 2)
         const dataBlob = new Blob([dataStr], { type: 'application/json' })
         const url = URL.createObjectURL(dataBlob)
         const link = document.createElement('a')
@@ -203,7 +214,7 @@ function App() {
 
 
 
-  // Funktion zum Importieren von Daten aus einer JSON-Datei
+  // Funktion zum Importieren von Daten aus einer JSON-Datei (unterstützt alte und neue Struktur)
   const importFromFile = (event) => {
     const file = event.target.files[0]
     if (file) {
@@ -214,10 +225,20 @@ function App() {
         try {
           const loadedData = JSON.parse(e.target.result)
           if (Array.isArray(loadedData)) {
+            // Rückwärtskompatibilität: alte Dateien enthielten nur ein Array von Kindern
             setRows(loadedData)
             setLastSaved(new Date())
-            setHasUnsavedChanges(false) // Daten wurden importiert, keine ungespeicherten Änderungen mehr
-            alert('Daten erfolgreich importiert und gespeichert!')
+            setHasUnsavedChanges(false)
+            alert('Daten erfolgreich importiert!')
+          } else if (loadedData && Array.isArray(loadedData.rows)) {
+            setRows(loadedData.rows)
+            if (loadedData.groupNames && typeof loadedData.groupNames === 'object') {
+              setGroupNames(loadedData.groupNames)
+              localStorage.setItem('groupNames', JSON.stringify(loadedData.groupNames))
+            }
+            setLastSaved(new Date())
+            setHasUnsavedChanges(false)
+            alert('Daten erfolgreich importiert!')
           } else {
             alert('Ungültiges Dateiformat!')
           }
