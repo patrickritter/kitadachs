@@ -150,7 +150,7 @@ const LandingPage = () => {
               <h3 className="feature-title">Datei-Export</h3>
               <p className="feature-description">
                 Speichern Sie Ihre Daten als JSON-Datei. 
-                "Speichern unter" für maximale Flexibilität.
+                &quot;Speichern unter&quot; für maximale Flexibilität.
               </p>
             </div>
             <div className="feature-card">
@@ -238,19 +238,19 @@ const LandingPage = () => {
                 </div>
                 <div className="code-content">
                   <div className="code-line">
-                    <span className="code-comment">// DSGVO-konforme Datenspeicherung</span>
+                    <span className="code-comment">{/* DSGVO-konforme Datenspeicherung */}</span>
                   </div>
                   <div className="code-line">
                     <span className="code-keyword">const</span> <span className="code-variable">data</span> = {'{'}
                   </div>
                   <div className="code-line">
-                    &nbsp;&nbsp;<span className="code-property">children</span>: <span className="code-string">'lokal gespeichert'</span>,
+                    &nbsp;&nbsp;<span className="code-property">children</span>: <span className="code-string">&apos;lokal gespeichert&apos;</span>,
                   </div>
                   <div className="code-line">
-                    &nbsp;&nbsp;<span className="code-property">groups</span>: <span className="code-string">'anpassbar'</span>,
+                    &nbsp;&nbsp;<span className="code-property">groups</span>: <span className="code-string">&apos;anpassbar&apos;</span>,
                   </div>
                   <div className="code-line">
-                    &nbsp;&nbsp;<span className="code-property">privacy</span>: <span className="code-string">'100% sicher'</span>
+                    &nbsp;&nbsp;<span className="code-property">privacy</span>: <span className="code-string">&apos;100% sicher&apos;</span>
                   </div>
                   <div className="code-line">
                     {'};'}
