@@ -1,4 +1,6 @@
-![Kitadachs Logo](public/kitadachs_logo.png)
+# Kitadachs
+
+![Kitadachs Logo](public/Kitadachs_Logo.png)
 
 Willkommen bei **Kitadachs** – dem Tool für **Gruppenzuordnung** und **Forecast** von Kindern in Kitas.
 

@@ -703,19 +703,23 @@ body {
     width: 40px;
     height: 40px;
     border-radius: var(--radius-md);
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: var(--transition-normal);
 }
 
-.browser-logo.chrome {
-    background: linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335);
+.browser-logo:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.browser-logo.edge {
-    background: linear-gradient(45deg, #0078d4, #00bcf2);
-}
-
-.browser-logo.firefox {
-    background: linear-gradient(45deg, #ff7139, #ff9500);
+.browser-logo svg {
+    border-radius: var(--radius-md);
+    transition: var(--transition-normal);
 }
 
 .browser-logo.safari {
