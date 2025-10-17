@@ -1,6 +1,6 @@
-# Kitadachs
+# Kitadachs |Build Status| |Coverage Status| |PyPi Version| |Codestyle|
 
-![Kitadachs Logo](public/Kitadachs_Logo.png)
+![Kitadachs Logo](public/kitadachs-logo.png)
 
 Willkommen bei **Kitadachs** – dem Tool für **Gruppenzuordnung** und **Forecast** von Kindern in Kitas.
 
@@ -9,18 +9,9 @@ Willkommen bei **Kitadachs** – dem Tool für **Gruppenzuordnung** und **Foreca
     - Auslastung und Altersstruktur im Blick  
     - Forecast für kommende Monate
 
-## Browser-Unterstützung
-Die Anwendung ist aktuell für **Chromium-basierte Browser** (Chrome, Edge, Opera) optimiert und bietet dort die beste Funktionalität mit dem nativen "Speichern unter" Dialog. Andere Browser werden ebenfalls unterstützt, nutzen jedoch den Download-Modus.
-
-
-## CI/CD
-Das Projekt verwendet GitHub Actions für automatische Builds und Tests:
-- **CI Pipeline**: Läuft bei jedem Push und Pull Request
-- **Code Quality**: ESLint, Tests und Security Audit
-- **Multi-Node Support**: Tests auf Node.js 18.x und 20.x
-- **Build Artifacts**: Automatischer Upload der Build-Dateien
-
-## Datenschutz & DSGVO-Konformität
-Diese Anwendung speichert sämtliche Daten ausschließlich lokal in einer Datei auf dem Gerät, auf dem die Anwendung betrieben wird.
-Es findet keine Übertragung an externe Server oder Dritte statt.
-Da die Daten weder weitergegeben noch in einer Cloud gespeichert werden, erfüllt die Anwendung die Anforderungen der DSGVO (Datenschutz-Grundverordnung) in Bezug auf Datensparsamkeit und lokale Verarbeitung.
+## Technische Details
+- **Frontend**: React 18 mit Vite 7 als Build-Tool, React Router 7 steuert die Navigation zwischen Landingpage (`/`) und Anwendung (`/app`).
+- **State & Persistenz**: React Hooks verwalten Kinder- und Gruppenlisten, `localStorage` speichert Daten lokal; Export als JSON-Datei via File System Access API.
+- **Styling**: Klassische CSS-Dateien in `src/` (z. B. `src/App.css`, `src/components/LandingPage.css`) sowie im statischen Landingpage-Ordner `landing/`.
+- **Konfiguration & Assets**: Tabellenvorlagen liegen in `src/config`, statische Ressourcen im Ordner `public/`.
+- **Tooling**: ESLint, Vitest und Testing Library sind vorkonfiguriert; erforderlich ist Node.js ≥22 (siehe `package.json`).
