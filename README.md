@@ -8,6 +8,9 @@
 
 Die Anwendung ist live verfügbar unter: **[GitHub Pages](https://ihr-username.github.io/kitadachs)**
 
+## License
+This project is licensed under the [MIT License](./LICENSE).
+
 ## 🛠️ Technische Details
 
 ### Voraussetzungen
