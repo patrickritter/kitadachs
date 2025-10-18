@@ -8,7 +8,7 @@ const LandingPage = () => {
       <nav className="navbar">
         <div className="nav-container">
           <div className="nav-logo">
-            <img src="/kitadachs-logo.png" alt="Kitadachs Logo" className="logo-img" />
+            <img src="/kitadachs/kitadachs-logo.png" alt="Kitadachs Logo" className="logo-img" />
             <span className="logo-text">Kitadachs</span>
           </div>
           <div className="nav-menu" id="nav-menu">
