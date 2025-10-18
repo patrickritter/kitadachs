@@ -1,17 +1,69 @@
-# Kitadachs |Build Status| |Coverage Status| |PyPi Version| |Codestyle|
+# Kitadachs
 
 ![Kitadachs Logo](public/kitadachs-logo.png)
 
-Willkommen bei **Kitadachs** – dem Tool für **Gruppenzuordnung** und **Forecast** von Kindern in Kitas.
+**Kitadachs** ist eine moderne Kindergarten-Verwaltungsanwendung für die digitale Verwaltung von Kindergarten-Gruppen. Einfach, sicher und vollständig DSGVO-konform.
 
-"Was ist Kitadachs?"
-    - Kinder gruppenweise planen  
-    - Auslastung und Altersstruktur im Blick  
-    - Forecast für kommende Monate
+## 🚀 Live-Demo
 
-## Technische Details
-- **Frontend**: React 18 mit Vite 7 als Build-Tool, React Router 7 steuert die Navigation zwischen Landingpage (`/`) und Anwendung (`/app`).
-- **State & Persistenz**: React Hooks verwalten Kinder- und Gruppenlisten, `localStorage` speichert Daten lokal; Export als JSON-Datei via File System Access API.
-- **Styling**: Klassische CSS-Dateien in `src/` (z. B. `src/App.css`, `src/components/LandingPage.css`) sowie im statischen Landingpage-Ordner `landing/`.
-- **Konfiguration & Assets**: Tabellenvorlagen liegen in `src/config`, statische Ressourcen im Ordner `public/`.
-- **Tooling**: ESLint, Vitest und Testing Library sind vorkonfiguriert; erforderlich ist Node.js ≥22 (siehe `package.json`).
+Die Anwendung ist live verfügbar unter: **[GitHub Pages](https://ihr-username.github.io/kitadachs)**
+
+## 🛠️ Technische Details
+
+### Voraussetzungen
+- **Node.js** 22.x oder höher
+- **npm** (kommt mit Node.js)
+
+### Lokale Entwicklung
+
+1. **Repository klonen**
+   ```bash
+   git clone https://github.com/ihr-username/kitadachs.git
+   cd kitadachs
+   ```
+
+2. **Dependencies installieren**
+   ```bash
+   npm install
+   ```
+
+3. **Entwicklungsserver starten**
+   ```bash
+   npm run dev
+   ```
+   
+   Die Anwendung ist dann verfügbar unter: `http://localhost:5173`
+
+4. **Weitere verfügbare Befehle**
+   ```bash
+   npm run build      # Produktions-Build erstellen
+   npm run preview    # Build lokal testen
+   npm run test       # Tests ausführen
+   npm run lint       # Code-Qualität prüfen
+   ```
+
+## 🌐 Routing
+
+- **`/`** - Landing Page
+- **`/app`** - Hauptanwendung (Kindergarten-Verwaltung)
+
+## 🚀 Deployment
+
+Das Projekt wird automatisch über GitHub Actions auf GitHub Pages deployed:
+
+- **Trigger**: Push auf `main` Branch
+
+## 🔧 Tech Stack
+
+- **Frontend**: React 18 + Vite
+- **Routing**: React Router DOM
+- **Styling**: CSS3
+- **Testing**: Vitest + Testing Library
+- **Linting**: ESLint
+- **Deployment**: GitHub Pages + GitHub Actions
+
+## 📱 Browser-Unterstützung
+
+- ✅ Chrome
+- ✅ Firefox  
+- ✅ Edge
