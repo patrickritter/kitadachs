@@ -2,59 +2,61 @@
 
 ![Kitadachs Logo](public/kitadachs-logo.png)
 
-**Kitadachs** ist eine moderne Kindergarten-Verwaltungsanwendung für die digitale Verwaltung von Kindergarten-Gruppen. Einfach, sicher und vollständig DSGVO-konform.
+**Kitadachs** is a modern kindergarten management application for digital management of kindergarten groups. Simple, secure, and fully GDPR-compliant.
 
-## 🚀 Live-Demo
+**📄 [Deutsche Version / German Version](README.de.md)**
 
-Die Anwendung ist live verfügbar unter: **[GitHub Pages](https://ihr-username.github.io/kitadachs)**
+## 🚀 Live Demo
+
+The application is live available at: **[GitHub Pages](https://patrickritter.github.io/kitadachs/)**
 
 ## License
 This project is licensed under the [MIT License](./LICENSE).
 
-## 🛠️ Technische Details
+## 🛠️ Technical Details
 
-### Voraussetzungen
-- **Node.js** 22.x oder höher
-- **npm** (kommt mit Node.js)
+### Prerequisites
+- **Node.js** 22.x or higher
+- **npm** (comes with Node.js)
 
-### Lokale Entwicklung
+### Local Development
 
-1. **Repository klonen**
+1. **Clone repository**
    ```bash
    git clone https://github.com/ihr-username/kitadachs.git
    cd kitadachs
    ```
 
-2. **Dependencies installieren**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Entwicklungsserver starten**
+3. **Start development server**
    ```bash
    npm run dev
    ```
    
-   Die Anwendung ist dann verfügbar unter: `http://localhost:5173`
+   The application is then available at: `http://localhost:5173`
 
-4. **Weitere verfügbare Befehle**
+4. **Additional available commands**
    ```bash
-   npm run build      # Produktions-Build erstellen
-   npm run preview    # Build lokal testen
-   npm run test       # Tests ausführen
-   npm run lint       # Code-Qualität prüfen
+   npm run build      # Create production build
+   npm run preview    # Test build locally
+   npm run test       # Run tests
+   npm run lint       # Check code quality
    ```
 
 ## 🌐 Routing
 
 - **`/`** - Landing Page
-- **`/app`** - Hauptanwendung (Kindergarten-Verwaltung)
+- **`/app`** - Main application (Kindergarten Management)
 
 ## 🚀 Deployment
 
-Das Projekt wird automatisch über GitHub Actions auf GitHub Pages deployed:
+The project is automatically deployed to GitHub Pages via GitHub Actions:
 
-- **Trigger**: Push auf `main` Branch
+- **Trigger**: Push to `main` branch
 
 ## 🔧 Tech Stack
 
@@ -65,7 +67,7 @@ Das Projekt wird automatisch über GitHub Actions auf GitHub Pages deployed:
 - **Linting**: ESLint
 - **Deployment**: GitHub Pages + GitHub Actions
 
-## 📱 Browser-Unterstützung
+## 📱 Browser Support
 
 - ✅ Chrome
 - ✅ Firefox  
